@@ -1,0 +1,26 @@
+    /**
+     * 测试websocket
+     *
+     */
+如果是本地测试  http头注意修改
+ let   socketUrl = socketUrl.replace('https', 'ws').replace('http', 'ws');
+
+
+
+    var ws = new WebSocket("wss://echo.websocket.org");
+    ws.onopen = function (evt) {
+      console.log("Connection open ...", evt);
+      ws.send("Hello WebSockets!");
+    };
+
+    ws.onmessage = function (evt) {
+      console.log("Received Message: " + evt.data);
+      ws.close();
+    };
+    ws.onclose = function () {
+      console.log("Connection closed.");
+    };
+
+    /**
+     * 测  删  以  上
+     */

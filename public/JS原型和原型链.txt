@@ -1,0 +1,53 @@
+var a = new A();
+此时a为A的实例对象，A为a的构造函数
+根据上面三点我们可以得出：
+1、a有一个__proto__可以访问到构造函数A的原型对象
+2、构造函数有一个属性prototype可以访问到自己的原型对象
+所以：a.__proto__ === A.prototype
+实例的 _proto_  === 构造函数的 prototype
+
+
+构造函数的原型对象  通过 prototype访问   原型对象里有一个constructor和_proto_属性
+constructor属性指向构造函数，构造函数通过prototype属性访问到自己的原型对象，原型对象通过constructor属性访问构造函数。
+
+_proto_  问什么构造函数也有_proto_  ？   是因为所有的原型对象都是有Object函数对象构造出来的
+
+
+Function函数的prototype属性可以访问到Function函数对象的__proto__属性
+怎么理解这句话很重要，函数只有一个，但实例却有很多个，Function顶层函数构造出这个Function函数对象实例，所以：
+Function.__proto__ === Function.prototype
+
+====================
+原型链
+====================
+var Fn = new Function();
+var fn = new Fn();
+
+Function.prototype.flag = '123';
+Fn.prototype.flag = '456';
+
+fn.__proto__ === Fn.prototype; // true
+fn.__proto__.flag; // '456'
+fn.flag; // '456'
+
+Fn.__proto__ === Function.prototype; // true
+Fn.__proto__.flag; // '123'
+Fn.flag; // '123'
+
+******
+对象被谁构造，那么对象就会继承谁原型上的属性
+
+fn由Fn构造，所以fn继承Fn原型上的flag属性，值为456
+Fn由Function构造，所以Fn继承Function原型上的flag属性，值为123
+
+
+===================
+fn为Fn函数构造出来的对象
+fn首先会继承来自Fn构造函数的原型对象上的属性，即：Fn.prototype
+Fn.prototype会继承来自Object构造函数的原型对象上的属性，即：Object.prototype
+所以fn会继承Fn.prototype 以及 Object.prototype
+
+============= 这就是继承==============
+ fn.__proto__   === Fn.prototype  
+Fn.prototype.__proto__   === Object.prototype
+所有：fn.__proto__.__proto__   === Object.prototype 

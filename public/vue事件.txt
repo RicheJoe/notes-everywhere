@@ -1,0 +1,15 @@
+@click
+@keyup.enter // 只有在 `key` 是 `Enter` 时调用 
+
+
+<!-- Alt + Enter -->
+<input @keyup.alt.enter="clear" />
+
+<!-- Ctrl + Click -->
+<div @click.ctrl="doSomething">Do something</div>
+
+<!-- 即使 Alt 或 Shift 被一同按下时也会触发 -->  只要有ctrl就行
+<button @click.ctrl="onClick">A</button>
+
+<!-- 有且只有 Ctrl 被按下的时候才触发 -->  exact
+<button @click.ctrl.exact="onCtrlClick">A</button>

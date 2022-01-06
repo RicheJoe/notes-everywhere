@@ -1,0 +1,21 @@
+//初始化websocket
+      const url =
+        "ws://" +
+        window.location.host +
+        "/ws/api/monitoring/ws/ID=1?token=" +
+        btoa([Cookies.get("Authorization")]) +
+        "&requestId=" +
+        this.requestId +
+        "&graphId=" +
+        this.graphId;
+
+
+
+代理配置
+devServer.proxy={
+ "/ws": {
+        target: "ws://10.30.10.234:9411",
+        ws: true,
+        changeOrigin: true,
+      }
+}

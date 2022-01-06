@@ -1,0 +1,81 @@
+.table-container {
+  flex: 1;
+  padding: 20px 24px;
+  /deep/ .el-table {
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    flex: 1;
+    width: 100%;
+    max-width: 100%;
+    background-color: #fff;
+    font-size: 14px;
+    color: rgb(82, 255, 255);
+    .el-checkbox {
+      .el-checkbox__inner {
+        background-color:#2d2d2d;
+        // border: 1px solid rgba(44,254,255,1);
+        border-radius: 2px;
+        
+      }
+      .is-checked {
+        .el-checkbox__inner {
+          background-color:#65a0a0;
+        }
+      }
+    }
+    .el-table__empty-block {
+      background-color:  #10161b;
+    }
+    &::before {
+      background-color: rgba(44,254,255,.5);
+    }
+    // background-color: #10161b;
+    tr {
+      background-color: #10161b;
+    }
+    td {
+      border-bottom: 1px solid rgba(44,254,255,.5);
+      border-bottom-width: 1px;
+      border-bottom-style: solid;
+      border-bottom-color: rgba(44, 254, 255, 0.5);
+      &.is-leaf {
+        border-bottom: 1px solid rgba(44,254,255,.5)!important;
+      }
+    }
+    td, th {
+      padding: 6px 0;
+    }
+    th {
+      &.is-leaf {
+        border-bottom: 1px solid rgba(44,254,255,.5)!important;
+      }
+    }
+    thead {
+      color: #b1dce1;
+      font-weight: 500;
+      th {
+        border-left: none;
+        border-right: none;
+        background: rgba(44,254,255,.2)!important;
+        background-image: initial !important;
+        background-position-x: initial !important;
+        background-position-y: initial !important;
+        background-size: initial !important;
+        background-repeat-x: initial !important;
+        background-repeat-y: initial !important;
+        background-attachment: initial !important;
+        background-origin: initial !important;
+        background-clip: initial !important;
+        background-color: rgba(44, 254, 255, 0.2) !important;
+      }
+    }
+    tbody tr:hover>td { 
+      background-color:hsla(0,0%,100%,.1)!important;
+    }
+  }
+  .el-table--small {
+    font-size: 14px;
+  }
+  
+}

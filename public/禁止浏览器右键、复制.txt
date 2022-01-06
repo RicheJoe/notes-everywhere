@@ -1,0 +1,67 @@
+1、鼠标右键触发事件
+  function click() 
+  {  
+   if(event.button==2) 
+     { 
+        alert('hello。。。。。。')  
+     }  
+  }  
+  document.onmousedown=click  
+2、让鼠标右键失效
+<body oncontextmenu=self.event.returnValue=false> 
+3、是页面文字内容无法选择或全选
+<body ondragstart="window.event.returnValue=false" oncontextmenu="window.event.returnValue=false" onselectstart="event.returnValue=false"> 
+4、利用js实现 禁用浏览器后退
+//回退时候产生一个前进事件
+<script> 
+    javascript:window.history.forward(1); 
+</script> 
+或者如下方式：
+
+    <script language="javascript">
+        //防止页面后退
+        history.pushState(null, null, document.URL);
+        window.addEventListener('popstate', function () {
+            history.pushState(null, null, document.URL);
+        });
+    </script>
+
+
+5、禁止f12
+document.onkeydown = function(){
+
+    if(window.event && window.event.keyCode == 123) {
+        
+        event.returnValue=false;
+    }}
+
+6、禁止复制   oncopy   剪切oncut 同理
+ dom.oncopy = (e) => {
+        return  false
+      };
+
+注意 ：碰到富文本编辑器  大多数是嵌入到页面iframe 此时
+ /**
+       * 禁止复制编辑器中内容  由于编辑器是iframe 暂时无法阻止默认事件  
+       * 所以只能设置window剪切板内容为空    e.clipboardData.setData('text/plain', '');
+       * 但是编辑器内还是可以粘贴自己的内容   TODO
+       * 
+       * 现在结果：1、外部复制的内容可粘贴进编辑器 
+                 2、编辑器内复制内容不可粘贴到外部 
+                 3、编辑器内复制内容可以粘贴到编辑器内部 
+                 4、剪切同理
+
+           winIframe.getSelection().toString()获取frame剪切板内容
+           window.getSelection().toString()  获取window剪切板内容
+          e.clipboardData.setData('text/plain', ''); 设置window的剪切板内容为空   不知如何设置iframe的内容  TODO
+       */
+
+    let winIframe = document.querySelector('iframe').contentWindow;
+      let domIframe = document.querySelector('iframe').contentWindow.document.querySelector('.mce-content-body ');
+      domIframe.oncopy = (e) => {
+        e.clipboardData.setData('text/plain', '');
+      };
+      domIframe.oncut = (e) => {
+        e.clipboardData.setData('text/plain', '');
+        if (winIframe.getSelection().toString()) this.$message('禁止复制');
+      };

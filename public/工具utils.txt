@@ -1,0 +1,178 @@
+//秒 转为 时分秒
+function sec_to_time(s) {
+      let q = Math.abs(s);
+      let t="";
+      if (q > -1) {
+        let hour = Math.floor(q/3600)%3600;console.log(hour)
+        let min = Math.floor(q / 60) % 60;
+        let sec = q % 60;
+        t += hour + ":";
+        if (min < 10) {
+          t += "0";
+        }
+        t += min + ":";
+        if (sec < 10) {
+          t += "0";
+        }
+        t += sec;
+      }
+      return t;
+    }
+
+/**
+     * @description 秒转换为分秒格式  无小时位 最大为59：59（3599s）
+     */
+   function  sec_to_time(s) {
+      let q = Math.abs(s);
+      let t = "";
+      if (q > -1) {
+        let min = Math.floor(q / 60) % 60;
+        let sec = q % 60;
+
+        if (min < 10) {
+          t = "0";
+        }
+        t += min + ":";
+        if (sec < 10) {
+          t += "0";
+        }
+        t += sec;
+      }
+      return t;
+    },
+
+
+//防抖函数封装
+function  debounce(func,delay){
+    let timer = null;
+    return function(...args){
+        if(timer) clearTimeout(timer)
+        timer = setTimeout(()=>{
+            func.apply(this,args)
+        },delay)
+    }
+}
+//节流
+function throttle(func,delay){
+  let lasttime = 0;
+  return function(...args){
+    let nowdate = new Date();
+    if(nowdate - lasttime >delay){
+      func.apply(this,args);
+      lasttime = nowdate
+    }
+  }
+}
+
+
+//时间戳转真实时间
+function formatDate(date, fmt) {
+    if (/(y+)/.test(fmt)) {
+      fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length));
+    }
+    let o = {
+      'M+': date.getMonth() + 1,
+      'd+': date.getDate(),
+      'h+': date.getHours(),
+      'm+': date.getMinutes(),
+      's+': date.getSeconds()
+    };
+    for (let k in o) {
+      if (new RegExp(`(${k})`).test(fmt)) {
+        let str = o[k] + '';
+        fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? str : padLeftZero(str));
+      }
+    }
+    return fmt;
+  };
+  
+  function padLeftZero (str) {
+    return ('00' + str).substr(str.length);
+  };
+
+
+//url src 路径转化为 file格式  模拟上传文件upload
+function imageToFile(src) {
+  return new Promise((resolve, reject) => {
+    if (src) {
+      var fileRaw;
+      var fileName = src.slice(5);
+      var img = new Image();
+      img.setAttribute("crossOrigin", "anonymous");
+      img.onload = function() {
+        var canvas = document.createElement("canvas");
+        var ctx = canvas.getContext("2d");
+        canvas.height = this.height;
+        canvas.width = this.width;
+        ctx.drawImage(this, 0, 0);
+
+        canvas.toBlob(blob => {
+          var file = new File([blob], fileName, {
+            type: "image/jpeg"
+          });
+          fileRaw = file;
+          resolve(fileRaw);
+        });
+      };
+      img.src = src;
+    } else {
+      reject("err");
+    }
+  });
+}
+
+
+//下载文件
+function downloadFile(res, name) {
+  const disposition = res.headers["content-disposition"];
+  const fileName = decodeURI(
+    disposition.substring(
+      disposition.indexOf("filename=") + 9,
+      disposition.length
+    )
+  );
+  var blob = new Blob([res.data]);
+  var downloadElement = document.createElement("a");
+  var href = window.URL.createObjectURL(blob); // 创建下载的链接
+  downloadElement.href = href;
+  downloadElement.download = name || fileName; // 下载后文件名
+  document.body.appendChild(downloadElement);
+  downloadElement.click(); // 点击下载
+  document.body.removeChild(downloadElement); // 下载完成移除元素
+  window.URL.revokeObjectURL(href);
+}
+
+
+//上传文件doc 文件并解析文本  需要使用 mammoth 插件
+function upLoadTxt(e) {
+  return new Promise(function(resolve, reject) {
+    let file = e.target.files[0];
+    let fileType = e.target.files[0].name.split(".");
+    if (fileType[1] === "txt") {
+      let reader = new FileReader();
+      reader.readAsText(file, "UTF-8");
+      reader.onload = function(e) {
+        resolve(e.target.result);
+      };
+    } else if (fileType[1] === "docx") {
+      let reader = new FileReader();
+      reader.onloadend = function(e) {
+        let arrayBuffer = e.target.result;
+        mammoth
+          .extractRawText({ arrayBuffer: arrayBuffer })
+          .then(resultObject => resolve(resultObject.value));
+      };
+      reader.readAsArrayBuffer(file);
+    } else reject("error");
+  });
+}
+
+//字符串按长度转数组
+    mySplit(str, leng = 20) {
+      let arr = [];
+      let index = 0;
+      while (index < str.length) {
+        arr.push(str.slice(index, (index += leng)));
+      }
+      return arr;
+    },

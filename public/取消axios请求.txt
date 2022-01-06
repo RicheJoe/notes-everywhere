@@ -1,0 +1,62 @@
+ 重点：  在新建axios请求中加入cancelToken参数    传入axios.CancelToken      调用  this.source("终止请求"); //取消请求
+cancelToken: new axios.CancelToken(function executor(c) {
+      // 设置 cancel token
+      that.source = c;
+    })
+
+
+
+例子：
+封装的axios 
+//利用axios请求将video路径转化为 blob=》file  格式
+import axios from "axios";
+const service = axios.create({
+  baseURL: "",
+  timeout: 600000
+});
+
+async function videoToFile(url, that) {
+  const res = await service({
+    baseURL: "",
+    method: "get",
+    url,
+    responseType: "blob",
+    cancelToken: new axios.CancelToken(function executor(c) {
+      // 设置 cancel token
+      that.source = c;
+    })
+  });
+
+  let temp = url.split("/");
+  let fileName = temp[temp.length - 1];
+  let file = new File([res.data], fileName, {
+    type: "video/mpeg"
+  });
+  return file;
+}
+
+export { videoToFile };
+
+
+vue组件中使用 
+调用方法
+const fileBolb = await videoToFile(
+          this.videoDemoList[this.activeIndex],
+          this  //在这里传入this
+        );
+
+取消的方法  在methods中
+cancelQuest() {
+      if (typeof this.source === "function") {
+        this.source("终止请求"); //取消请求
+        this.upFileLoading = false;
+        this.loading = false;
+      }
+    }
+
+
+========
+=================
+========================
+可以给按钮绑定事件来取消axios请求
+也可以   在发送axios请求之前  先取消上一次请求  防止多次发送同一个请求   例子： https://www.cnblogs.com/renzm0318/p/12031234.html

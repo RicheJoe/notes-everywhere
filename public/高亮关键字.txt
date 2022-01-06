@@ -1,0 +1,6 @@
+ highLight(text, key, bgColor = "red") {
+      let sKey = `<span class='highLight' style='color:${bgColor}'>${key}</span>`;
+      let rStr = new RegExp(key, "g");
+      let newContent = text.replace(rStr, sKey);
+      return newContent;
+    }

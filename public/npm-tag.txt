@@ -1,0 +1,11 @@
+npm publish --tag test
+
+在引用的项目里增删tag
+npm dist-tag add <pkg>@<version> [<tag>]
+npm dist-tag rm <pkg> <tag>
+npm dist-tag ls [<pkg>]
+
+npm info supermall  查看包信息  版本tag等
+
+直接使用
+npm install supermall@test

@@ -1,0 +1,196 @@
+<template>
+  <div>
+    <el-form label-width="100px" @submit.native.prevent>
+      <el-form-item label="上传文件">
+        <el-upload
+          class="upload-demo"
+          drag
+          action=""
+          multiple
+          :auto-upload="false"
+          :file-list="fileList"
+          :on-change="fileChange"
+        >
+          <i class="el-icon-upload"></i>
+          <div class="el-upload__text">
+            将文件拖到此处，或<em>点击上传</em>
+            <div slot="tip" class="el-upload__tip">
+              文件编码支持UTF-8、UTF-16
+            </div>
+          </div>
+        </el-upload>
+      </el-form-item>
+    </el-form>
+
+    <div class="import-title">导入装备数据实体列表</div>
+
+    <div class="data-view">
+      <el-alert
+        v-if="!tableData.length"
+        title="请先上传文件"
+        type="warning"
+        :closable="false"
+      >
+      </el-alert>
+      <el-table
+        v-else
+        highlight-current-row
+        :data="tableData"
+        max-height="410px"
+      >
+        <el-table-column
+          v-for="item of tableHeader"
+          :key="item"
+          :prop="item"
+          :label="item"
+        />
+        <!-- <el-table-column
+          fixed="right"
+          width="200"
+          label="是否重复（点击查看详情）"
+          prop="isRepeat"
+        ></el-table-column>
+        <el-table-column
+          label="是否覆盖"
+          prop="isCover"
+          fixed="right"
+        ></el-table-column> -->
+      </el-table>
+    </div>
+  </div>
+</template>
+
+<script>
+import { mapState } from "vuex";
+import { uploadWeapon } from "@/api/powerInfo";
+import XLSX from "xlsx";
+export default {
+  name: "EquipmentImport",
+  props: {
+    categoryId: {
+      type: Number,
+      default: undefined,
+    },
+  },
+  data() {
+    return {
+      loading: false,
+      fileList: [],
+      tableData: [],
+      excelData: {
+        header: null,
+        results: null,
+      },
+    };
+  },
+  computed: {
+    ...mapState("qbxx", ["graphName"]),
+  },
+  methods: {
+    isValid(file) {
+      return /\.(xlsx|xls|csv|txt)$/.test(file.name);
+    },
+    fileChange(file, fileList) {
+      const rawFile = file.raw;
+      if (!this.isValid(rawFile)) {
+        this.$message.error(
+          "只支持上传后缀名为 .xlsx, .xls, .csv，.txt 的文件"
+        );
+        return false;
+      }
+      this.fileList = fileList.slice(-1);
+      this.readerData(rawFile);
+    },
+    readerData(rawFile) {
+      this.loading = true;
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const data = e.target.result;
+          let workbook = null;
+          if (["csv", "txt"].includes(rawFile.name.slice(-3))) {
+            workbook = XLSX.read(data, { type: "string" });
+          } else {
+            workbook = XLSX.read(data, { type: "array" });
+          }
+
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+
+          const header = this.getHeaderRow(worksheet);
+          const results = XLSX.utils.sheet_to_json(worksheet);
+          this.generateData({ header, results });
+          this.loading = false;
+          resolve();
+        };
+        if (["csv", "txt"].includes(rawFile.name.slice(-3))) {
+          reader.readAsText(rawFile, "UTF-8");
+        } else {
+          reader.readAsArrayBuffer(rawFile);
+        }
+      });
+    },
+    generateData({ header, results }) {
+      this.excelData.header = header;
+      this.excelData.results = results;
+      this.handleSuccess(this.excelData);
+    },
+    getHeaderRow(sheet) {
+      const headers = [];
+      const range = XLSX.utils.decode_range(sheet["!ref"]);
+      let C;
+      const R = range.s.r;
+      /* start in the first row */
+      for (C = range.s.c; C <= range.e.c; ++C) {
+        /* walk every column in the range */
+        const cell = sheet[XLSX.utils.encode_cell({ c: C, r: R })];
+        /* find the cell in the first row */
+        let hdr = "UNKNOWN " + C; // <-- replace with your desired default
+        if (cell && cell.t) hdr = XLSX.utils.format_cell(cell);
+        headers.push(hdr);
+      }
+      return headers;
+    },
+    handleSuccess({ results, header }) {
+      this.tableData = results;
+      this.tableHeader = header;
+    },
+    async upload() {
+      const res = await uploadWeapon({
+        graphName: this.graphName,
+        parentId: this.categoryId,
+        vertexList: this.tableData.map(i => {
+          return {
+            labels: i.labels,
+            name: i.name || i.名称,
+            properties: JSON.stringify(i),
+          };
+        }),
+      });
+      if (res && res.data.success) {
+        this.$message.success("导入成功");
+        return true;
+      } else {
+        this.$message.error("导入失败");
+        return false;
+      }
+    },
+  },
+};
+</script>
+
+<style lang="scss" scoped>
+.import-title {
+  font-size: 14px;
+  color: #333333;
+  /* font-weight: bold; */
+  margin-left: 22px;
+  margin-top: 6px;
+  padding-left: 8px;
+  border-left: 4px solid #1890ff;
+}
+.data-view {
+  margin-left: 22px;
+  margin-top: 10px;
+}
+</style>

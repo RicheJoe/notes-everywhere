@@ -1,0 +1,16 @@
+paramsSerializer: params => {
+      return qs.stringify(params, { indices: false })
+    }})
+
+
+大概有4种形式：
+
+qs.stringify({ids: [1, 2, 3]}, { indices: false })
+ //形式： ids=1&ids=2&id=3
+qs.stringify({ids: [1, 2, 3]}, {arrayFormat: ‘indices‘})
+ //形式： ids[0]=1&aids1]=2&ids[2]=3
+qs.stringify({ids: [1, 2, 3]}, {arrayFormat: ‘brackets‘})
+ //形式：ids[]=1&ids[]=2&ids[]=3
+qs.stringify({ids: [1, 2, 3]}, {arrayFormat: ‘repeat‘}) 
+//形式： ids=1&ids=2&id=3
+

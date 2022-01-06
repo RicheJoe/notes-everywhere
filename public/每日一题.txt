@@ -1,0 +1,184 @@
+******************  例题一 **********************************
+******************🐖🐖🐖**********************************
+const list = [1, 2, 3]
+const square = num => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(num * num)
+    }, 1000)
+  })
+}
+
+function test() {
+  list.forEach(async x=> {
+    const res = await square(x)
+    console.log(res)
+  })
+}
+test()
+
+
+//以上代码  等待1s后并行输出1 4 9 
+原理:
+因为foreach是不能阻塞的 尝试async阻塞无效  要想实现每隔一秒输出  需要使用 for循环 或者 for of
+
+async function test() {
+  for (let i = 0; i < list.length; i++) {
+    let x = list[i]
+    const res = await square(x)
+    console.log(res)
+  }
+}
+
+async function test() {
+  for (let x of list) {
+    const res = await square(x)
+    console.log(res)
+  }
+}
+
+
+******************  例题二 **********************************
+******************🐖🐖🐖**********************************
+let { ...yideng } = Object.create({ x: 1 });
+console.log(yideng.x);
+//undefined
+
+解析：解构赋值不会去找原型链上的属性，而Object.create（a）会将a放在新建对象的原型链上，即 let p = Object.create({ x: 1 });//p输出为{},但是p.x =1 因为p原型链上有x
+
+
+
+
+******************  例题三 **********************************
+******************🐖🐖🐖**********************************
+var a = { k1: 1 };
+var b = a;
+a.k3 = a = { k2: 2 };
+console.log(a); // ?    { k2: 2 };
+console.log(b); // ?    {k1: 1, k3: {k2: 2 }
+
+解析： 第三行   .运算符高于 =   ，所以a先挂载k3属性   第二步  新建了a并赋值为   { k2: 2 }  注意 a.k3 的 a  和 a=   { k2: 2 }  这两个a现在不是同一个 
+所以   b= a 中指向的第一行的a  值为   {k1: 1, k3: {k2: 2 }             而最新的a值为{ k2: 2 };
+
+这是因为var的原因 如果换成let 代码第三行会报错  因为a已经被定义过  
+let a = { k1: 1 };
+let b = a;
+a.k3 = a = { k2: 2 };
+console.log(a); // ?    { k2: 2 };
+console.log(b); // ?    {k1: 1, k3: {k2: 2 }
+VM1684:1 Uncaught SyntaxError: Identifier 'a' has already been declared  
+
+
+
+******************  例题四 **********************************
+******************🐖🐖🐖**********************************
+输出出多级嵌套结构的 Object 的所有 key 值     // 递归实现
+
+var obj = {
+  a: '12',
+  b: '23',
+  first: {
+    c: '34',
+    d: '45',
+    second: { 3: '56', f: '67', three: { g: '78', h: '89', i: '90' }}
+  }
+}
+function getObjAllKeys(obj, res = []) {
+  for (const key in obj) {
+    res.push(key)
+    if (typeof obj[key] === 'object') {
+      getObjAllKeys(obj[key], res)
+    }
+  }
+  return res
+}
+getObjAllKeys(obj)
+
+
+
+
+
+******************  例题五 **********************************
+******************🐖🐖🐖**********************************
+this 的指向问题 
+
+
+    var name = 'global'
+    var obj = {
+        name:'local',
+        foo:function(){
+            this.name = 'foo'
+        }.bind(window)
+    }
+    var bar = new obj.foo()
+    setTimeout((function(){
+        console.log(window.name)  //最后执行 
+    }),0)
+    console.log(bar.name)  //this指向obj  所以 name为foo
+    var bar3 = bar2 = bar
+    bar2.name = "foo2"  
+    console.log(bar3.name)  // bar3 bar2 bar  使用同一个地址  所以值一样  都是 foo2 当然 this还是obj   window的name没有改变
+
+输出： foo  》foo2》 global
+
+
+
+
+
+
+
+
+
+
+
+******************  例题六**********************************
+******************🐖🐖🐖**********************************
+立即执行函数的写法
+( function(){…} )()和( function (){…} () )
+
+
+
+(function(a){
+    console.log(a);   //firebug输出123,使用（）运算符
+})(123);
+ 
+(function(a){
+    console.log(a);   //firebug输出1234，使用（）运算符
+}(1234));
+ 
+!function(a){
+    console.log(a);   //firebug输出12345,使用！运算符
+}(12345);
+ 
++function(a){
+    console.log(a);   //firebug输出123456,使用+运算符
+}(123456);
+ 
+-function(a){
+    console.log(a);   //firebug输出1234567,使用-运算符
+}(1234567);
+ 
+var fn=function(a){
+    console.log(a);   //firebug输出12345678，使用=运算符
+}(12345678)
+
+
+
+
+
+
+******************  例题七**********************************
+******************🐖🐖🐖**********************************
+查看页面出现最多次的节点名称
+解析：document.querySelectorAll('*') 和 reduce 处理
+
+
+const maxBy = (list, keyBy) => list.reduce((x, y) => keyBy(x) > keyBy(y) ? x : y)
+
+function getFrequentTag () {
+  const tags = [...document.querySelectorAll('*')].map(x => x.tagName).reduce((o, tag) => { 
+    o[tag] = o[tag] ? o[tag] + 1 : 1;
+    return o   // o对象中保存节点和次数   tag:num
+  }, {})
+  return maxBy(Object.entries(tags), tag => tag[1])
+}

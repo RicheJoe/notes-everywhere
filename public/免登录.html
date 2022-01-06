@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>unlogin</title>
+  </head>
+
+  <body>
+    <script>
+      try {
+        var search = window.location.search;
+        var searchArr = search.split("?")[1].split("&");
+        var params = searchArr.map((a, b) => a.split("=")[1]).join("/");
+        var route = "/modeling/edit-dag/" + params;
+        var ip = window.location.origin;
+        var url = `${ip}/api/rest/s/insight/user/guest-login`;
+        var token = "";
+        var xhr = new XMLHttpRequest();
+        xhr.open("post", url, true);
+        xhr.send();
+        xhr.onreadystatechange = function () {
+          if (xhr.status === 200 && xhr.readyState === 4) {
+            token = JSON.parse(xhr.response).object;
+            var setToken = "token=" + token;
+            document.cookie = setToken;
+            localStorage.setItem(
+              "token",
+              JSON.stringify({
+                dataType: "string",
+                content: token,
+                datetime: Date.now()
+              })
+            );
+            window.location.href = window.location.origin + route;
+          }
+        };
+      } catch (error) {
+        console.log(error);
+      }
+    </script>
+  </body>
+</html>

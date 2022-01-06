@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>xxx</title>
+  </head>
+  <body>
+    <div id="box"></div>
+  </body>
+
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+    }
+    #box {
+      width: 100px;
+      height: 100px;
+      background-color: rgb(145, 191, 221);
+      position: absolute;
+      top: 250px;
+      left: 180px;
+    }
+  </style>
+
+
+<script>
+  window.onload = function () {
+    let box = document.querySelector('#box')
+   
+
+    box.onmousedown =  (ev)=> {
+   
+      //为啥TM的直接在onmousemove回调里面减然后加不行  
+      // 就是开始和结束的坐标相减然后加上box开始的绝对位置就是最后的结果坐标  但是不行  fuck
+
+      
+      //h5 已经有draggable属性  可调用ondrag 等回调事件处理拖拽
+     
+
+      //换个思路 按下面的答案   鼠标最后在的坐标的位置   减去  点击时的鼠标相对box的位置大小   =  box的绝对路径  因为坐标就是绝对路径  
+    let  distanceX = ev.clientX - box.offsetLeft; // 鼠标到可视区左边的距离 - box到页面左边的距离
+    let  distanceY = ev.clientY - box.offsetTop;
+    console.log(`鼠标点击点在box相对的坐标(${distanceX},${distanceY})`)
+    document.onmousemove =  (e)=> {
+      let  left = e.clientX - distanceX;
+      let  top = e.clientY - distanceY;
+      if (left <= 0) {
+        left = 0;
+      } else if (left >= document.documentElement.clientWidth - box.offsetWidth) {
+        left = document.documentElement.clientWidth - box.offsetWidth;
+      }
+      if (top <= 0) {
+        top = 0;
+      } else if (top >= document.documentElement.clientHeight - box.offsetHeight) {
+        top = document.documentElement.clientHeight - box.offsetHeight;
+      }
+      box.style.left = left + 'px';
+      box.style.top = top + 'px';
+    }
+    box.onmouseup =  () =>{
+      console.log('up')
+      document.onmousemove = null;
+      box.onmouseup = null;
+    }
+  }
+  
+  }
+
+</script>
+</html>

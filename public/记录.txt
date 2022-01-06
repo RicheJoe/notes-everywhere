@@ -1,0 +1,11 @@
+9754d196b26f34fdc914a62611de33bbd4fa5bcf    token   vscode同步配置  
+
+60665c25ed38be57504deaea6c16ad4baab0a78c
+
+ID:69fcd20b98f2f72d8b51d74e160b9999。请复制这个 ID 并将其用于其他设备来下载配置。
+
+GitHub Token: dd6e**********
+GitHub Gist: 69fcd20b98f2f72d8b51d74e160b9999
+GitHub Gist Type: Secret
+
+C:\Users\zhouhang\AppData\Local\Google\Chrome\User Data\Default\Extensions   谷歌插件安装地址

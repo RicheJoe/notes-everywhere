@@ -1,0 +1,225 @@
+首先 最基本的实现flat
+
+
+=========================================
+=========================================
+=========================================
+
+利用循环遍历数组判断是否为数组  递归
+const arr = [1, 2, 3, 4, [1, 2, 3, [1, 2, 3, [1, 2, 3]]], 5, "string", { name: "弹铁蛋同学" }];
+// concat + 递归
+function flat(arr) {
+  let arrResult = [];
+  arr.forEach(item => {
+    if (Array.isArray(item)) {
+      arrResult = arrResult.concat(flat(item));   // 递归
+    } else {
+      arrResult.push(item);
+    }
+  });
+  return arrResult;
+}
+flat(arr)
+// [1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 1, 2, 3, 5, "string", { name: "弹铁蛋同学" }];
+
+
+
+=========================================
+=========================================
+=========================================
+=========================================
+=========================================
+利用reduce实现  和上一个一样不过是遍历方法用了reduce
+
+可选一：reduce只展开一层
+arr.reduce((pre,cur)=>pre.concat(cur),[])
+
+主要：reduce实现flat
+
+function flat(arr){
+  return arr.reduce((pre,cur)=>pre.concat(Array.isArray(cur)?flat(cur):cur),
+  [])
+}
+
+
+
+============================================
+============================================
+============================================
+============================================
+进阶一
+使用栈的思想实现   先进后出
+// 栈思想    pop和push 搭配  判断最后一位是否为数组  不是则返回  是则继续入栈（展开一层）
+思路：
+从数组最后一位开始扁平    
+拿出最后一位，如果是数组再次入栈，并且展开了一层   不是数组插入数组的头部（入栈）
+
+
+
+function flat(arr) {
+  const result = []; 
+  const stack = [].concat(arr);  // 将数组元素拷贝至栈，直接赋值会改变原数组
+  //如果栈不为空，则循环遍历  
+  while (stack.length !== 0) {
+    const val = stack.pop(); //末位
+    if (Array.isArray(val)) {
+      stack.push(...val); //如果是数组再次入栈（放回stack中，并且展开了一层   ）stack有长度
+    } else {
+      result.unshift(val); //如果不是数组就将其取出来放入结果数组中
+    }
+  }
+  return result;
+}
+const arr = [1, 2, 3, 4, [1, 2, 3, [1, 2, 3, [1, 2, 3]]], 5, "string", { name: "弹铁蛋同学" }]
+flat(arr)
+// [1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 1, 2, 3, 5, "string", { name: "弹铁蛋同学" }];
+
+
+
+
+
+
+进阶二
+通过传入整数参数控制“拉平”层数
+
+// reduce + 递归
+function flat(arr, num = 1) {
+  return num > 0
+    ? arr.reduce((pre, cur) =>pre.concat(Array.isArray(cur) ? flat(cur, num - 1) : cur),[])
+    : arr.slice();
+}
+const arr = [1, 2, 3, 4, [1, 2, 3, [1, 2, 3, [1, 2, 3]]], 5, "string", { name: "弹铁蛋同学" }]
+flat(arr, Infinity);
+// [1, 2, 3, 4, 1, 2, 3, 1, 2, 3, 1, 2, 3, 5, "string", { name: "弹铁蛋同学" }];
+
+
+
+
+demo 
+[
+    {
+        "description": "",
+        "iconUrl": "",
+        "id": 10,
+        "name": "科研部门",
+        "parentId": -1,
+        "sort": 2,
+        "userId": "10159,10172",
+        "children": [
+            {
+                "description": "",
+                "iconUrl": "",
+                "id": 11,
+                "name": "科研小组1",
+                "parentId": 10,
+                "sort": 1,
+                "userId": "10159",
+                "children": []
+            },
+            {
+                "description": "",
+                "iconUrl": "",
+                "id": 12,
+                "name": "科研小组2",
+                "parentId": 10,
+                "sort": 2,
+                "userId": "10089",
+                "children": [
+                    {
+                        "description": "",
+                        "iconUrl": "",
+                        "id": 13,
+                        "name": "武器装备组1",
+                        "parentId": 12,
+                        "sort": 1,
+                        "userId": "10089",
+                        "children": []
+                    },
+                    {
+                        "description": "",
+                        "iconUrl": "",
+                        "id": 14,
+                        "name": "武器装备组2",
+                        "parentId": 12,
+                        "sort": 2,
+                        "userId": "10089",
+                        "children": []
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "description": "",
+        "iconUrl": "",
+        "id": 15,
+        "name": "后勤部门",
+        "parentId": -1,
+        "sort": 3,
+        "userId": "10095",
+        "children": []
+    },
+    {
+        "description": "",
+        "iconUrl": "",
+        "id": 17,
+        "name": "审核小组",
+        "parentId": -1,
+        "sort": 4,
+        "userId": "10099",
+        "children": []
+    },
+    {
+        "description": "",
+        "iconUrl": "",
+        "id": 18,
+        "name": "调研大组",
+        "parentId": -1,
+        "sort": 5,
+        "userId": "10095",
+        "children": [
+            {
+                "description": "liujf测试",
+                "iconUrl": "",
+                "id": 16,
+                "name": "调研小组",
+                "parentId": 18,
+                "sort": 1,
+                "userId": "10097,10095",
+                "children": []
+            }
+        ]
+    },
+    {
+        "description": "",
+        "iconUrl": "",
+        "id": 25,
+        "name": "测试部门",
+        "parentId": -1,
+        "sort": 1,
+        "userId": "",
+        "children": [
+            {
+                "description": "",
+                "iconUrl": "",
+                "id": 26,
+                "name": "测试小组",
+                "parentId": 25,
+                "sort": 1,
+                "userId": "",
+                "children": [
+                    {
+                        "description": "",
+                        "iconUrl": "",
+                        "id": 27,
+                        "name": "测试",
+                        "parentId": 26,
+                        "sort": 1,
+                        "userId": "",
+                        "children": []
+                    }
+                ]
+            }
+        ]
+    }
+]

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI</title>
+</head>
+<body>
+    
+</body>
+<script>
+    //1、十进制转二进制 
+    function dec2bin (decNumber){
+        //定义一个栈对象 保存结果  用数组代替（先进后出）
+        let stack = []
+
+        while(decNumber > 0){
+            stack.push(decNumber % 2)
+            decNumber = Math.floor(decNumber/2)
+        }
+
+        //取出结果 因为之栈保存  所以是先进后出  倒着取值  
+        //console.log(stack.reverse().join(''))
+        //或者利用数组方法pop  循环 删除 返回最后一个值
+        let stringStack=''
+        while(stack.length){
+            stringStack+=stack.pop()
+        }
+        console.log(stringStack);
+    }
+    dec2bin(2)
+
+    //2、击鼓传花  数到某个数这个数淘汰 利用队列 
+    function passGame(nameList,num){
+        //创建队列结构并以此加入   （先进先出）
+        let queue =[]
+        for(let i=0;i<nameList.length;i++){
+            queue.push(nameList[i])
+        }
+
+        //开始数数  不是num就加入末尾  是就删除
+        while(queue.length>1){
+        //num之前的数重新放入队列尾部
+            for(let i=0;i<num-1;i++){
+                queue.push(queue.shift())
+            }
+            //num对应的直接删除
+            queue.shift()
+        }
+        console.log('最终剩下的数：'+queue[0]+' 在namelist的索引：'+nameList.indexOf(queue[0]))
+    }
+    var arr=[1,2,3,4,5]
+    passGame(arr,2)
+
+    //3、优先级队列  数组中每一项保存了一个值和一个优先级数   数越大排前面
+    //三个参数  一个输出的数组（可以为空，或者有排序的数组对象）  一个要插入的对象  对象的等级
+    function priorityQueue(arrSort,arrInsert,priority){
+        this.items=arrSort
+        this.obj={}
+        obj.arrInsert=arrInsert
+        obj.priority=priority
+
+        if(this.items.length==0){
+            this.items.push(obj)
+        }else{
+            for(var i=0;i<this.items.length;i++){
+                if(obj.priority<this.items[i].priority){
+                    this.items.splice(i,0,obj)
+                    var added=true
+                    break
+                }  
+            }
+            if(!added){
+                this.items.push(obj)
+            }
+        }
+
+        console.log(this.items)
+    }
+    let arrSort = [{ arrInsert: '男士', priority: 100 }, {arrInsert: '女士', priority: 1}]
+    priorityQueue(arrSort,'孕妇',9999)
+
+    //4、实现链表  
+    function LinkedList(){
+        //新建节点
+        function Node(data){
+            this.data=data
+            this.next=null
+        }
+
+        //链表的属性
+        this.head=null
+        this.length=0
+
+        //链表尾部追加方法append
+        LinkedList.prototype.append = function(data){
+            var newNode = new Node(data)
+            if(this.length==0){
+                this.head = newNode
+            }else{
+                var current = this.head
+                while(current.next){
+                    current = current.next
+                }
+                current.next = newNode
+            }
+            this.length +=1 
+        }
+
+        //链表的toString方法
+        LinkedList.prototype.toString = function(data){
+            var current = this.head
+            var listString = ''
+            while(current){
+                listString += current.data + ' '
+                current =current.next
+            }
+            return listString
+        }
+
+        //insert方法  position和data  位置和值
+        LinkedList.prototype.insert = function(position,data){
+            //position越界判断
+            if(position < 0 || position > this.length)  return false
+
+            //创建节点
+            var newNode = new Node(data)
+
+            //插入  position=0  或者不为0 
+            if(position == 0){
+                newNode.next = this.head
+                this.head = newNode
+            }else{
+                var index = 0
+                var current = this.head
+                var previous = null
+                while(index++ < position){
+                    previous = current  
+                    current = current.next
+                }
+                newNode.next = current
+                previous.next = newNode
+            } 
+
+            this.length += 1
+            return true
+        }
+
+        //get方法 传入position 找到对应索引的值
+        LinkedList.prototype.get = function(position){
+            //position越界判断
+            if(position < 0 || position >= this.length)  return null
+            //获取对应数据
+            var current = this.head
+            var index = 0
+            while(index++ <position){   //但position为0时，不进循环直接返回第一个值
+                current = current.next
+            }
+            return current.data
+        }
+
+        //indexOf方法 传入值 找到对应索引  没有返回-1
+        LinkedList.prototype.indexOf = function(data){
+            var current = this.head
+            var index = 0
+            while(current)  {
+                if(current.data==data){
+                    return index
+                }
+                index += 1
+                current=current.next
+            }   
+            return -1    
+        }
+
+        //update方法 传入position和值 更新他
+        LinkedList.prototype.update = function(position,newData){
+            if(position < 0 || position >= this.length)  return false
+            var current = this.head
+            var index = 0
+
+            while(index++ < position){
+                current = current.next
+            }
+
+            current.data = newData
+
+            return true 
+             
+               
+        }
+
+        //removeAt方法 传入position索引   移除
+        LinkedList.prototype.removeAt = function(position){
+            if(position < 0 || position >= this.length)  return null
+            
+            var current = this.head
+            if(position == 0){
+                this.head = this.head.next 
+            }else{
+                var index = 0
+                var previous = null
+                while(index++ < position){
+                    previous= current
+                    current = current.next
+                }
+                previous.next= current.next
+            }
+
+            this.length -= 1
+
+            return current.data 
+   
+               
+        }
+
+        //remove方法 传入某个值 移除
+        LinkedList.prototype.remove = function(data){
+            //获取索引
+            var position = this.indexOf(data)
+
+            return this.removeAt(position)
+               
+        }
+
+
+
+        
+    }
+
+
+    var list = new LinkedList()
+    list.append('abc')
+    list.append('nba')
+    list.toString()
+    list.insert(1,'rna')
+    list.insert(0,'dna')
+    console.log(list)
+    console.log(list.get(2))
+    console.log(list.indexOf('nba'))
+    list.update(3,'nbasb')
+    console.log(list.removeAt(0))
+</script>
+</html>

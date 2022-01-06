@@ -1,0 +1,253 @@
+<template>
+  <el-form
+    ref="form"
+    :model="validateForm"
+    :class="{ 'equal-width': equalWidth }"
+    label-position="right"
+    :label-width="labelWidth"
+    :size="size"
+  >
+    <el-form-item
+      v-for="(attr, index) in attrList"
+      :key="index"
+      :label="attr.label"
+      :rules="rules[attr.label]"
+      :prop="`attrList[${index}].val`"
+    >
+      <template v-if="attr.widgetType === 'input'">
+        <el-input
+          v-model="attr.val"
+          :clearable="!attr.required"
+          :placeholder="'请输入' + attr.label"
+        ></el-input>
+      </template>
+      <template v-else-if="attr.widgetType === 'textarea'">
+        <el-input
+          v-model="attr.val"
+          type="textarea"
+          :clearable="!attr.required"
+          :placeholder="'请输入' + attr.label"
+        ></el-input>
+      </template>
+      <template v-else-if="attr.widgetType === 'single-select'">
+        <DatasourceSelect
+          v-model="attr.val"
+          :datasource="attr.datasource"
+          :placeholder="'请选择' + attr.label"
+        />
+      </template>
+      <template v-else-if="attr.widgetType === 'multi-select'">
+        <DatasourceSelect
+          v-model="attr.val"
+          multiple
+          :datasource="attr.datasource"
+          :placeholder="'请选择' + attr.label"
+        />
+      </template>
+      <template v-else-if="attr.widgetType === 'input-number'">
+        <el-input-number
+          v-model="attr.val"
+          :min="attr.numMin || 1"
+          :max="attr.numMax || 1000"
+        ></el-input-number>
+      </template>
+      <template v-else-if="attr.widgetType === 'upload-img'">
+        <!-- 上传图片 -->
+        <UploadImgAndFile
+          v-if="!upload_img"
+          type="img"
+          @upload-entity-file="uploadImg($event, index)"
+        ></UploadImgAndFile>
+        <img
+          v-else
+          class="upload_img_defalut"
+          :src="upload_img"
+          @click="deleteUploadImg(index)"
+        />
+      </template>
+      <template v-else-if="attr.widgetType === 'upload-file'">
+        <UploadImgAndFile
+          v-if="!upload_file"
+          type="file"
+          @upload-entity-file="uploadFile($event, index)"
+        ></UploadImgAndFile>
+        <label
+          v-else
+          class="upload_file_defalut"
+          @click="deleteUploadFile(index)"
+          >{{ upload_file }}</label
+        >
+        <a
+          v-if="upload_file"
+          :href="upload_fileDownLoad"
+          target="_blank"
+          :download="upload_file"
+        >
+          <img class="upload_download" src="../../assets/img/download.png" />
+        </a>
+      </template>
+      <template v-if="attr.widgetType === 'customize-dialog'">
+        <el-input
+          v-model="attr.val"
+          readonly
+          :placeholder="'请选择' + attr.label"
+          @focus="$emit('open-dialog', attr.id)"
+        ></el-input>
+      </template>
+      <template v-else></template>
+    </el-form-item>
+  </el-form>
+</template>
+
+<script>
+import DatasourceSelect from "@/components/DatasourceSelect";
+import UploadImgAndFile from "@/components/UploadImgAndFile";
+
+export default {
+  name: "DynamicForm",
+  components: {
+    DatasourceSelect,
+    UploadImgAndFile,
+  },
+  props: {
+    size: {
+      type: String,
+      default: undefined,
+    },
+    labelWidth: {
+      type: String,
+      default: "auto",
+    },
+    attrList: {
+      type: Array,
+      default() {
+        return [];
+      },
+    },
+    equalWidth: {
+      type: Boolean,
+      default() {
+        return false;
+      },
+    },
+  },
+  data() {
+    return {
+      upload_img: "",
+      upload_file: "",
+      upload_fileDownLoad: "",
+    };
+  },
+  computed: {
+    validateForm() {
+      return {
+        attrList: this.attrList,
+      };
+    },
+    rules() {
+      const obj = {};
+      this.attrList.forEach(i => {
+        const isSelect =
+          i.widgetType.includes("select") || i.widgetType.includes("dialog");
+        const tmp = isSelect
+          ? [
+              {
+                required: i.required,
+                message: `请选择${i.label}`,
+                trigger: "change",
+              },
+            ]
+          : [
+              {
+                required:
+                  i.widgetType.includes("upload-img") ||
+                  i.widgetType.includes("upload-file")
+                    ? false
+                    : i.required,
+                message: `请输入${i.label}`,
+                trigger: "blur",
+              },
+            ];
+        obj[i.label] = tmp;
+      });
+      return obj;
+    },
+  },
+  mounted() {
+    this.attrList.forEach(i => {
+      if (i.widgetType == "parms_fileName") {
+        this.upload_file = i.val;
+      }
+      if (i.widgetType == "parms_img") {
+        this.upload_img = i.val;
+      }
+      if (i.widgetType == "parms_filePath") {
+        this.upload_fileDownLoad = process.env.VUE_APP_DEV_PREFIX + i.val;
+      }
+    });
+  },
+  destroyed() {
+    this.upload_img = "";
+    this.upload_file = "";
+    this.upload_fileDownLoad = "";
+  },
+  methods: {
+    // 动态表单应该还是要传个form对象进来绑定v-model吧，现在这样子不大好
+    validate() {
+      return this.$refs["form"].validate();
+    },
+    clearValidate() {
+      this.$refs["form"].clearValidate();
+    },
+    //上传已选文件
+    async uploadImg(files, index) {
+      if (files.length === 0) return;
+      if (files.length > 20) return this.$message.error("图片数量不能超过1个");
+      let file = files[0];
+      this.attrList[index].val = files[0];
+      var reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = e => {
+        this.upload_img = e.target.result;
+        this.attrList[index].deleteImage = "false";
+      };
+    },
+    async uploadFile(files, index) {
+      if (files.length === 0) return;
+      if (files.length > 20) return this.$message.error("文件数量不能超过1个");
+      this.upload_file = files[0].name;
+      this.attrList[index].val = files[0];
+      this.attrList[index].deleteFile = "false";
+    },
+    deleteUploadImg(index) {
+      this.upload_img = "";
+      this.attrList[index].val = "";
+      this.attrList[index].deleteImage = "true";
+    },
+    deleteUploadFile(index) {
+      this.upload_file = "";
+      this.attrList[index].val = "";
+      this.attrList[index].deleteFile = "true";
+    },
+  },
+};
+</script>
+
+<style lang="scss" scoped>
+.equal-width {
+  .el-select {
+    width: 100%;
+  }
+}
+.upload_img_defalut {
+  width: 100%;
+  cursor: pointer;
+  max-width: 300px;
+}
+.upload_download {
+  width: 12px;
+  height: 12px;
+  margin-left: 15px;
+  cursor: pointer;
+}
+</style>

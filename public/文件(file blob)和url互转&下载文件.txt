@@ -1,0 +1,219 @@
+1、 reader.readAsDataURL(file);
+2、var objectURL = window.URL.createObjectURL(fileObj);
+     const src = window.URL.createObjectURL(new Blob([file.raw]));
+
+
+
+//图片路径转Blob
+     export function imageToBlob(src, callback) {
+          var img = new Image();
+          img.setAttribute("crossOrigin", "anonymous");
+          img.onload = function() {
+            var canvas = document.createElement("canvas");
+            var ctx = canvas.getContext("2d");
+            canvas.height = this.height;
+            canvas.width = this.width;
+            ctx.drawImage(this, 0, 0);
+            canvas.toBlob(callback);
+          };
+          img.src = src;
+        }
+//blob 可与file格式互转   
+  var file = new File([blob], fileName, {
+            type: "image/jpeg"
+          });
+
+//上传doc  txt 文件 转为文本  需要mammoth插件
+        export function upLoadTxt(e) {
+          return new Promise(function(resolve, reject) {
+            let file = e.target.files[0];
+            let fileType = e.target.files[0].name.split(".");
+            if (fileType[1] === "txt") {
+              let reader = new FileReader();
+              reader.readAsText(file, "UTF-8");
+              reader.onload = function(e) {
+                resolve(e.target.result);
+              };
+            } else if (fileType[1] === "docx") {
+              let reader = new FileReader();
+              reader.onloadend = function(e) {
+                let arrayBuffer = e.target.result;
+                mammoth
+                  .extractRawText({ arrayBuffer: arrayBuffer })
+                  .then(resultObject => resolve(resultObject.value));
+              };
+              reader.readAsArrayBuffer(file);
+            } else reject("error");
+          });
+        }
+
+
+//上传视频文件转为Canvas
+        export function VideoToCanvas(_this) {
+          const video = _this.$refs.video;  //video标签的dom
+          let width, height;
+          video.onloadeddata = () => {
+            const videoCanvas = document.createElement("canvas");
+            const videoCtx = videoCanvas.getContext("2d");
+            const { offsetWidth, offsetHeight } = _this.$refs.wrap;
+            width = offsetWidth * 0.8;
+            height = offsetHeight * 0.75;
+        
+            let scale = 1;
+            if (width > height) {
+              scale = (offsetWidth - 2) / width;
+            } else {
+              scale = (offsetHeight - 2) / height;
+            }
+            scale = scale >= 1 ? 1 : scale;
+            videoCanvas.style.transform = `translate(-50%,-50%) scale(${scale})`;
+            videoCanvas.width = width;
+            videoCanvas.height = height;
+            videoCtx.drawImage(video, 0, 0, width, height);
+            document.querySelector(".video").appendChild(videoCanvas);
+        
+            let mousedown;
+            let dragging = false;
+            // 添加绘制矩形事件
+            function Point(x, y) {
+              this.x = x;
+              this.y = y;
+            }
+        
+            // 坐标转化为canvas坐标
+            function windowToCanvas(x, y) {
+              //返回元素的大小以及位置
+              var bbox = videoCanvas.getBoundingClientRect();
+              return new Point(x - bbox.left, y - bbox.top);
+            }
+            function updateRect(point) {
+              let w = Math.abs(point.x - mousedown.x);
+              let h = Math.abs(point.y - mousedown.y);
+        
+              let left = point.x > mousedown.x ? mousedown.x : point.x;
+              let top = point.y > mousedown.y ? mousedown.y : point.y;
+              // console.log([left, top, w, h]);
+              w = w / scale;
+              h = h / scale;
+              left = left / scale;
+              top = top / scale;
+              // console.log([left, top, w, h]);
+        
+              videoCtx.save();
+              videoCtx.beginPath();
+              videoCtx.rect(left, top, w, h);
+              videoCtx.stroke();
+              videoCtx.restore();
+            }
+        
+            videoCanvas.onmousedown = function(e) {
+              e.preventDefault();
+              mousedown = windowToCanvas(e.clientX, e.clientY);
+              dragging = true;
+            };
+        
+            videoCanvas.onmousemove = function(e) {
+              e.preventDefault();
+              if (dragging) {
+                videoCtx.drawImage(video, 0, 0, width, height);
+                updateRect(windowToCanvas(e.clientX, e.clientY));
+              }
+            };
+            videoCanvas.onmouseup = function(e) {
+              e.preventDefault();
+              dragging = false;
+            };
+        
+            _this.videoCtx = videoCtx;
+            _this.video = videoCanvas;
+          };
+        
+          video.onplay = () => {
+            const render = () => {
+              _this.videoCtx.drawImage(video, 0, 0, width, height);
+              _this.timer = window.requestAnimationFrame(render);
+            };
+            render();
+          };
+          video.onpause = () => {
+            window.cancelAnimationFrame(_this.timer);
+          };
+        }
+
+
+
+        /**
+        * @description 秒转换为分秒格式
+        */
+       export function sec_to_time(s) {
+         let q = Math.abs(s);
+         let t;
+         if (q > -1) {
+           let min = Math.floor(q / 60) % 60;
+           let sec = q % 60;
+       
+           if (min < 10) {
+             t = "0";
+           }
+           t += min + ":";
+           if (sec < 10) {
+             t += "0";
+           }
+           t += sec.toFixed(2);
+         }
+         return t;
+       }
+
+
+
+       //图片转为url
+export function imageDataToImage(imageData) {
+     const { width, height } = imageData;
+     const canvas = document.createElement("canvas");
+     const ctx = canvas.getContext("2d");
+     canvas.width = width;
+     canvas.height = height;
+   
+     ctx.putImageData(imageData, 0, 0);
+     return canvas.toDataURL();
+   }
+   //file转为url
+   export function fileToUrl(file) {
+     const blob = new Blob([file]);
+     return window.URL.createObjectURL(blob);
+   }
+
+
+//audio  url  转为blob  通过请求路径的方式  设置返回类型  responseType
+
+// service为axios   也可ajax
+
+   export async function audioToBlob(url) {
+     const res = await service({
+       baseURL: "",
+       method: "get",
+       url,
+       responseType: "blob"
+     });
+     return res.data;
+   }
+
+
+
+
+下载===
+ toLargeCSV(obj) {
+      let keys = Object.keys(obj);
+      let str = "key,中文\n";
+      keys.forEach(item => (str += `${item},${obj[item]},\n`));
+      let blob = new Blob([str], { type: "text/plain" });
+      // blob = new Blob([String.fromCharCode(0xfeff), blob], { type: blob.type });
+      let url = window.URL.createObjectURL(blob);
+      console.log(obj, url);
+      let link = document.createElement("a");
+      link.href = url;
+      link.download = "导出.doc";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }

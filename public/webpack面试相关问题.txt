@@ -1,0 +1,70 @@
+webpack面试相关问题
+
+
+1、webpack与gulp、grunt的区别
+
+  三者都是前端构建工具  
+  webpack是基于入口的构建 
+    webpack会自动地递归解析入口所需要加载的所有资源文件，然后用不同的Loader来处理不同的文件，用Plugin来扩展webpack功能。
+  剩下的两者为链式构建
+    对其做一系列链式操作，更新流上的数据， 整条链式操作构成了一个任务，多个任务就构成了整个web的构建流程。
+
+
+2、与webpack类似的工具还有哪些？谈谈你为什么最终选择（或放弃）使用webpack？
+    同样是基于入口的打包工具还有以下几个主流的：
+    webpack rollup   parcel
+
+3、常用的loader
+样式：css-loader  sass-loader  less-loader   style-loader  px2rem-loader
+文件：file-loader img-loader  url-loader
+编译：babel-loader、coffee-loader 、ts-loader script-loader  vue-loader
+校验测试：mocha-loader、jshint-loader 、eslint-loader
+
+比如下面配置，可以匹配.scss的文件，分别经过sass-loader、css-loader、style-loader的处理。
+sass-loader转化sass为css文件，并且包一层module.exports成为一个js module。style-loader将创建一个style标签将css文件嵌入到html中。css-loader则处理其中的@import和url()。
+
+module.exports = {
+  module: {
+    rules: [
+        {
+          test: /\.scss$/,
+          use:[
+              {loader:'style-loader'},
+              {loader:'css-loader',options:{sourceMap:true,modules:true}},
+              {loader:'sass-loader',options:{sourceMap:true}}
+          ],
+          exclude:/node_modules/
+      }
+    ]
+  }
+}
+
+vue-loader、coffee-loader、babel-loader等可以将特定文件格式转成js模块、将其他语言转化为js语言和编译下一代js语言
+file-loader、url-loader等可以处理资源，file-loader可以复制和放置资源位置，并可以指定文件名模板，用hash命名更好利用缓存。
+
+
+4、webpack常用的plugin
+
+html-webpack-plugin可以根据模板自动生成html代码，并自动引用css和js文件
+compression-webpack-plugin 生产环境可采用gzip压缩JS和CSS
+define-plugin：定义环境变量
+commons-chunk-plugin：提取公共代码
+uglifyjs-webpack-plugin：通过UglifyES压缩ES6代码
+
+5、Loader和Plugin的不同？
+不同的作用
+
+Loader直译为"加载器"。Webpack将一切文件视为模块，但是webpack原生是只能解析js文件，如果想将其他文件也打包的话，就会用到loader。 所以Loader的作用是让webpack拥有了加载和解析非JavaScript文件的能力。
+Plugin直译为"插件"。Plugin可以扩展webpack的功能，让webpack具有更多的灵活性。 在 Webpack 运行的生命周期中会广播出许多事件，Plugin 可以监听这些事件，在合适的时机通过 Webpack 提供的 API 改变输出结果。
+
+6.webpack的构建流程是什么?从读取配置到输出文件这个过程尽量说全
+Webpack 的运行流程是一个串行的过程，从启动到结束会依次执行以下流程：
+
+初始化参数：从配置文件和 Shell 语句中读取与合并参数，得出最终的参数；
+开始编译：用上一步得到的参数初始化 Compiler 对象，加载所有配置的插件，执行对象的 run 方法开始执行编译；
+确定入口：根据配置中的 entry 找出所有的入口文件；
+编译模块：从入口文件出发，调用所有配置的 Loader 对模块进行翻译，再找出该模块依赖的模块，再递归本步骤直到所有入口依赖的文件都经过了本步骤的处理；
+完成模块编译：在经过第4步使用 Loader 翻译完所有模块后，得到了每个模块被翻译后的最终内容以及它们之间的依赖关系；
+输出资源：根据入口和模块之间的依赖关系，组装成一个个包含多个模块的 Chunk，再把每个 Chunk 转换成一个单独的文件加入到输出列表，这步是可以修改输出内容的最后机会；
+输出完成：在确定好输出内容后，根据配置确定输出的路径和文件名，把文件内容写入到文件系统。
+在以上过程中，Webpack 会在特定的时间点广播出特定的事件，插件在监听到感兴趣的事件后会执行特定的逻辑，并且插件可以调用 Webpack 提供的 API 改变 Webpack 的运行结果。

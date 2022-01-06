@@ -1,0 +1,16 @@
+BFC块级格式化上下文
+
+形成一个独立的渲染区域，让处于BFC内部的元素与外部的元素相互隔离，使内外元素的定位不会相互影响。
+
+触发条件：
+float 值不为   none
+overflow 不为  visible
+display  为table-cell  table-caption  inline-block
+position   不为 static或relative
+
+开发中的应用 
+普通文档流 上下元素的margin会重叠 BFC可以阻止重叠
+
+一个盒子如果没有上补白(padding-top)和上边框(border-top)，那么这个盒子的上边距会和其内部文档流中的第一个子元素的上边距重叠   BFC可以阻止重叠
+
+可以阻止元素被浮动元素覆盖(非浮动元素触发了BFC)  清除浮动

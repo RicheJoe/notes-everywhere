@@ -1,0 +1,116 @@
+https://segmentfault.com/img/remote/1460000017962416?w=634&h=522
+
+memory cache
+MemoryCache顾名思义，就是将资源缓存到内存中，等待下次访问时不需要重新下载资源，而直接从内存中获取。Webkit早已支持memoryCache。
+目前Webkit资源分成两类，一类是主资源，比如HTML页面，或者下载项，一类是派生资源，比如HTML页面中内嵌的图片或者脚本链接，分别对应代码中两个类：MainResourceLoader和SubresourceLoader。虽然Webkit支持memoryCache，但是也只是针对派生资源，它对应的类为CachedResource，用于保存原始数据（比如CSS，JS等），以及解码过的图片数据。
+disk cache
+DiskCache顾名思义，就是将资源缓存到磁盘中，等待下次访问时不需要重新下载资源，而直接从磁盘中获取，它的直接操作对象为CurlCacheManager。
+|memory cache | disk cache
+相同点	只能存储一些派生类资源文件	只能存储一些派生类资源文件
+不同点	退出进程时数据会被清除	退出进程时数据不会被清除
+存储资源	一般脚本、字体、图片会存在内存当中	一般非脚本会存在内存当中，如css等
+
+
+
+
+三级缓存原理 (访问缓存优先级)
+先在内存中查找,如果有,直接加载。
+如果内存中不存在,则在硬盘中查找,如果有直接加载。
+如果硬盘中也没有,那么就进行网络请求。
+请求获取的资源缓存到硬盘和内存。
+
+
+强缓存  和   协商缓存
+
+======================强缓存==============================
+浏览器在加载资源时，会先根据本地缓存资源的 header 中的信息判断是否命中强缓存，如果命中则直接使用缓存中的资源不会再向服务器发送请求。
+
+这里的 header 中的信息指的是 expires 和 cache-control.
+
+Expires
+该字段是 http1.0 时的规范，它的值为一个绝对时间的 GMT 格式的时间字符串，比如 Expires:Mon,18 Oct 2066 23:59:59 GMT。这个时间代表着这个资源的失效时间，在此时间之前，即命中缓存。这种方式有一个明显的缺点，由于失效时间是一个绝对时间，所以当服务器与客户端时间偏差较大时，就会导致缓存混乱。
+
+Cache-Control
+Cache-Control 是 http1.1 时出现的 header 信息，主要是利用该字段的 max-age 值来进行判断，它是一个相对时间，例如 Cache-Control:max-age=3600，代表着资源的有效期是 3600 秒。cache-control 除了该字段外，还有下面几个比较常用的设置值：
+
+no-cache：需要进行协商缓存，发送请求到服务器确认是否使用缓存。
+
+no-store：禁止使用缓存，每一次都要重新请求数据。
+
+public：可以被所有的用户缓存，包括终端用户和 CDN 等中间代理服务器。
+
+private：只能被终端用户的浏览器缓存，不允许 CDN 等中继缓存服务器对其缓存。
+
+Cache-Control 与 Expires 可以在服务端配置同时启用，同时启用的时候 Cache-Control 优先级高。
+
+
+====================协商缓存===============================
+当强缓存没有命中的时候，浏览器会发送一个请求到服务器，服务器根据 header 中的部分信息来判断是否命中缓存。如果命中，则返回 304 ，告诉浏览器资源未更新，可使用本地的缓存。
+
+这里的 header 中的信息指的是 Last-Modify/If-Modify-Since 和 ETag/If-None-Match.
+
+Last-Modify/If-Modify-Since
+浏览器第一次请求一个资源的时候，服务器返回的 header 中会加上 Last-Modify，Last-modify 是一个时间标识该资源的最后修改时间。
+
+当浏览器再次请求该资源时，request 的请求头中会包含 If-Modify-Since，该值为缓存之前返回的 Last-Modify。服务器收到 If-Modify-Since 后，根据资源的最后修改时间判断是否命中缓存。
+
+如果命中缓存，则返回 304，并且不会返回资源内容，并且不会返回 Last-Modify。
+
+缺点:
+
+短时间内资源发生了改变，Last-Modified 并不会发生变化。
+
+周期性变化。如果这个资源在一个周期内修改回原来的样子了，我们认为是可以使用缓存的，但是 Last-Modified 可不这样认为,因此便有了 ETag。
+
+ETag/If-None-Match
+与 Last-Modify/If-Modify-Since 不同的是，Etag/If-None-Match 返回的是一个校验码。ETag 可以保证每一个资源是唯一的，资源变化都会导致 ETag 变化。服务器根据浏览器上送的 If-None-Match 值来判断是否命中缓存。
+
+与 Last-Modified 不一样的是，当服务器返回 304 Not Modified 的响应时，由于 ETag 重新生成过，response header 中还会把这个 ETag 返回，即使这个 ETag 跟之前的没有变化。
+
+Last-Modified 与 ETag 是可以一起使用的，服务器会优先验证 ETag，一致的情况下，才会继续比对 Last-Modified，最后才决定是否返回 304。
+
+总结
+当浏览器再次访问一个已经访问过的资源时，它会这样做：
+
+1.看看是否命中强缓存，如果命中，就直接使用缓存了。
+
+2.如果没有命中强缓存，就发请求到服务器检查是否命中协商缓存。
+
+3.如果命中协商缓存，服务器会返回 304 告诉浏览器使用本地缓存。
+
+4.否则，返回最新的资源。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+==================================HTTP1.0 VS HTTP1.1 VS HTTP2.0=========================
+
+
+#HTTP1.0和HTTP1.1的一些区别
+缓存处理，HTTP1.0中主要使用Last-Modified，Expires 来做为缓存判断的标准，HTTP1.1则引入了更多的缓存控制策略：ETag，Cache-Control…
+带宽优化及网络连接的使用，HTTP1.1支持断点续传，即返回码是206（Partial Content）
+错误通知的管理，在HTTP1.1中新增了24个错误状态响应码，如409（Conflict）表示请求的资源与资源的当前状态发生冲突；410（Gone）表示服务器上的某个资源被永久性的删除…
+Host头处理，在HTTP1.0中认为每台服务器都绑定一个唯一的IP地址，因此，请求消息中的URL并没有传递主机名（hostname）。但随着虚拟主机技术的发展，在一台物理服务器上可以存在多个虚拟主机（Multi-homed Web Servers），并且它们共享一个IP地址。HTTP1.1的请求消息和响应消息都应支持Host头域，且请求消息中如果没有Host头域会报告一个错误（400 Bad Request）
+长连接，HTTP1.1中默认开启Connection： keep-alive，一定程度上弥补了HTTP1.0每次请求都要创建连接的缺点
+#HTTP2.0和HTTP1.X相比的新特性
+新的二进制格式（Binary Format），HTTP1.x的解析是基于文本，基于文本协议的格式解析存在天然缺陷，文本的表现形式有多样性，要做到健壮性考虑的场景必然很多，二进制则不同，只认0和1的组合，基于这种考虑HTTP2.0的协议解析决定采用二进制格式，实现方便且健壮
+header压缩，HTTP1.x的header带有大量信息，而且每次都要重复发送，HTTP2.0使用encoder来减少需要传输的header大小，通讯双方各自cache一份header fields表，既避免了重复header的传输，又减小了需要传输的大小
+服务端推送（server push），例如我的网页有一个sytle.css的请求，在客户端收到sytle.css数据的同时，服务端会将sytle.js的文件推送给客户端，当客户端再次尝试获取sytle.js时就可以直接从缓存中获取到，不用再发请求了
+// 通过在应用生成HTTP响应头信息中设置Link命令 
+Link: </styles.css>; rel=preload; as=style, </example.png>; rel=preload; as=image
+多路复用（MultiPlexing）
+HTTP/1.0 每次请求响应，建立一个TCP连接，用完关闭
+HTTP/1.1 「长连接」 若干个请求排队串行化单线程处理，后面的请求等待前面请求的返回才能获得执行机会，一旦有某请求超时等，后续请求只能被阻塞，毫无办法，也就是人们常说的线头阻塞；
+HTTP/2.0 「多路复用」多个请求可同时在一个连接上并行执行，某个请求任务耗时严重，不会影响到其它连接的正常执行；

@@ -1,0 +1,31 @@
+<template slot-scope="scope">
+            <el-tag
+              v-if="scope.row[item.property] === 'new'"
+              type="success"
+              size="small"
+              >增加</el-tag
+            >
+            <el-tag
+              v-else-if="scope.row[item.property] === 'up'"
+              type="danger"
+              size="small"
+            >
+              升级
+            </el-tag>
+            <span v-else>{{ scope.row[item.property] }}</span>
+          </template>
+
+
+
+
+
+ <el-table-column
+          v-for="(item, index) in tableHead"
+          :key="index"
+          :label="item.label"
+          align="center"
+        >
+          <template slot-scope="scope">
+            <span>{{ scope.row[item.property] }}</span>
+          </template>
+        </el-table-column>

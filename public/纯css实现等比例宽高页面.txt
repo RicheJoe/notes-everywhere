@@ -1,0 +1,66 @@
+1.padding值（百分数） 是基于宽度设定的，例如宽度是300px （padding-top: 50% 就是150px）
+2.子元素伪类设置padding-top撑开元素，并设置定位定位到【0,0】原点
+3.利用子元素padding-top控制宽高比
+=========================================
+body {
+    /* Important part */
+    
+    background: orange;
+    font-family: 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;
+    color: #222;
+}
+.box {
+    display: inline-block;
+    position: relative;
+    width: 20%;
+    margin: 5% 5% 0 0;
+    float: left;
+    font-size: 12px;
+}
+.box:before {
+    /* Other ratios */
+    
+    content: "";
+    display: block;
+    padding-top: 100%;
+}
+.ratio2_1:before {
+    padding-top: 50%;
+}
+.ratio1_2:before {
+    padding-top: 200%;
+}
+.ratio4_3:before {
+    padding-top: 75%;
+}
+.ratio16_9:before {
+    padding-top: 56.25%;
+}
+.content {
+    position: absolute;
+    /* Styling */
+    
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: black;
+    padding: 30px;
+    text-align: center;
+    vertical-align: center;
+    text-transform: uppercase;
+    color: #fff;
+}
+.content span {
+    font-weight: bold;
+    font-size: 3em;
+    display: block;
+}
+header {
+    padding: 2em;
+    color: #333;
+    text-align: center;
+}
+a {
+    font-weight: bold;
+}

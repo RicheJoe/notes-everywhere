@@ -1,0 +1,129 @@
+//collspase
+
+<div v-loading="loading" class="Content">
+          <div v-for="(item, index) in rightList" :key="index" class="item">
+            <div class="header" name="1" @click="headerToggle(index)">
+              {{ item }}
+              <i
+                class="el-icon-arrow-right"
+                :class="{
+                  arrowDown: rightActiveIndex === index,
+                  arrowRight: rightActiveIndex !== index
+                }"
+              ></i>
+              <!-- <i
+                v-if="rightActiveIndex !== index"
+                class="el-icon- el-icon-arrow-right"
+              ></i>
+              <i v-else class="el-icon- el-icon-arrow-down"></i> -->
+            </div>
+            <div
+              class="content"
+              :class="{ contentActive: rightActiveIndex === index }"
+            >
+              <div class="result">
+                <div v-if="index === 0">
+                  <slot name="rightResult">
+                    <!-- <p v-for="(data, key, num) in photoData" :key="num">
+                      {{ key }} : {{ data }}
+                    </p> -->
+                  </slot>
+                </div>
+                <codemirror
+                  v-else-if="index === 1"
+                  v-model.trim="requsetCode"
+                  class="codeEdit"
+                  :options="cmOptions"
+                ></codemirror>
+                <codemirror
+                  v-else
+                  v-model.trim="responseCode"
+                  class="codeEdit"
+                  :options="cmOptions"
+                ></codemirror>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+
+methods: {
+    headerToggle(index) {
+      if (this.rightActiveIndex === index) {
+        this.rightActiveIndex = 9;
+      } else {
+        this.rightActiveIndex = index;
+      }
+    }
+  }
+
+
+
+
+.Content {
+      .item {
+        .header {
+          padding: 12px;
+          height: 40px;
+          background-color: #f5f5f5;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          box-shadow: 0px 1px 0px 0px #e5e5e5, 0px -1px 0px 0px #e5e5e5;
+          .arrowDown {
+            animation: myframe 0.3s linear;
+            -webkit-animation: myframe 0.3s linear;
+            animation-fill-mode: forwards;
+          }
+          @keyframes myframe {
+            from {
+              transform: rotate(0deg);
+              -webkit-transform: rotate(0deg);
+            }
+            to {
+              transform: rotate(90deg);
+              -webkit-transform: rotate(90deg);
+            }
+          }
+          .arrowRight {
+            animation: myframes 0.3s linear;
+            -webkit-animation: myframes 0.3s linear;
+            animation-fill-mode: forwards;
+          }
+          @keyframes myframes {
+            from {
+              transform: rotate(90deg);
+              -webkit-transform: rotate(90deg);
+            }
+            to {
+              transform: rotate(0deg);
+              -webkit-transform: rotate(0deg);
+            }
+          }
+        }
+        .result {
+          margin: 12px;
+          border: 1px#d5d6d8 solid;
+
+          p {
+            padding: 8px;
+            border-bottom: 1px#d5d6d8 solid;
+            font-size: 12px;
+            width: 100%;
+          }
+        }
+        .content {
+          max-height: 0px;
+          overflow: hidden;
+          transition: max-height 0.3s ease-out;
+        }
+        .contentActive {
+          transition: max-height 0.3s ease-in;
+          max-height: 336px;
+          overflow: auto;
+        }
+      }
+    }

@@ -1,0 +1,10 @@
+https://cn.vuejs.org/v2/guide/components-slots.html#%E5%85%B7%E5%90%8D%E6%8F%92%E6%A7%BD
+为了在父组件中使用子组件的时候   可以使用子组件的数据
+
+示例参考el-table   slot-scope
+
+
+
+
+具名插槽
+注意 v-slot 只能添加在 <template> 上 (只有一种例外情况)，

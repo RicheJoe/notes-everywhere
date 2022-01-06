@@ -1,0 +1,194 @@
+function getCookie(name) {
+  var match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]*)"));
+  if (match) return unescape(match[2]);
+}
+
+async function async1() {
+  console.log("async1 start");
+  await async2();
+  console.log("async1 end");
+}
+async function async2() {
+  console.log("async2");
+}
+console.log("script start");
+setTimeout(function () {
+  console.log("setTimeout");
+}, 0);
+async1();
+new Promise(function (resolve) {
+  console.log("promise1");
+  resolve();
+}).then(function () {
+  console.log("promise2");
+});
+console.log("script end");
+
+// script start
+
+// async1 start
+
+// async2
+
+// promise1
+
+// script end
+
+// async1 end
+
+// promise2
+
+// setTimeout
+
+let a = { n: 1 };
+let b = a;
+a.x = a = { n: 2 }; //a 指向了{n: 2}  此时该堆内存内没有x属性  所以  undefined
+
+b = { n: 1 };
+b = {
+  n: 1,
+  x: { n: 2 }
+};
+console.log(a.x); // undefined
+
+console.log(b.x); // { n : 2}
+
+// 非匿名自执行函数，函数名只读
+var b = 10;
+(function b() {
+  // 'use strict'
+  b = 20; //如果是严格模式 这里会报错  非严格模式此行代码不生效 静默失败
+  console.log(b); //fn b()
+})();
+
+var b = 10;
+(function b() {
+  // 'use strict'
+  var b = 20;
+  console.log(window.b); //10
+  console.log(b); //20
+})();
+
+var b = 10;
+(function b() {
+  console.log(b);
+  b = 5;
+  console.log(window.b);
+  var b = 20;
+  console.log(b);
+})();
+
+//变量提升
+var name = 'World!';
+(function () {
+    if (typeof name === 'undefined') {
+        var name = 'Jack';
+        console.log('Goodbye ' + name);
+    } else {
+        console.log('Hello ' + name);
+    }
+})();
+
+var a = [1, 2, 3],
+    b = [1, 2, 3],
+    c = [1, 2, 4]
+a ==  b
+a === b
+a >   c
+a <   c
+// 这段代码的执行结果？
+
+// 答案
+// 答案：false, false, false, true
+
+
+"b" + "a" + +"a" + "a"  //baNaNa
+
+// 上面的表达式相当于'b'+'a'+ (+'a')+'a'，因为（+'a'）是NaN，所以：
+// 'b'+'a'+ (+'a')+'a' = 'b'+'a'+ "NaN"+'a'='baNaNa'
+
+
+let res = new Array()
+for(var i = 0; i < 10; i++){
+    res.push(function(){
+        return console.log(i)
+    })
+}
+res[0]() 
+res[1]()
+res[2]()  //结果都是10  闭包问题   把var换let
+
+
+
+
+
+
+
+/*
+ 实现链式调用 
+
+*/
+// 实现链式调用     可以直接返回对象本身来实现链式调用
+const student = {
+  math: 0,
+  english: 0,
+  setMathScore: function(math){
+      this.math = math; 
+      return this;
+  },
+  setEnglishScore: function(english){
+      this.english = english; 
+      return this;
+  },
+  getMathAndEnglish: function(){
+      return `{math: ${this.math}, english: ${this.english}}`;
+  }
+};
+const score = student.setMathScore(10).setEnglishScore(30).getMathAndEnglish();
+console.log(score); // {math: 130, english: 118}
+
+
+//判断两个对象是否完全相等 （内容）
+// 答案仅供参考
+// 更详细的解答建议参考Underscore源码[https://github.com/lessfish/underscore-analysis/blob/master/underscore-1.8.3.js/src/underscore-1.8.3.js#L1094-L1190](https://github.com/lessfish/underscore-analysis/blob/master/underscore-1.8.3.js/src/underscore-1.8.3.js#L1094-L1190)
+function isEqual(A, B) {
+    const keysA = Object.keys(A)
+    const keysB = Object.keys(B)
+
+    // 健长不一致的话就更谈不上相等了
+    if (keysA.length !== keysB.length) return false
+
+    for (let i = 0; i < keysA.length; i++) {
+        const key = keysA[i]
+
+        // 类型不等的话直接就不相等了
+        if (typeof A[key] !== typeof B[key]) return false
+    
+        // 当都不是对象的时候直接判断值是否相等
+        if (typeof A[key] !== 'object' && typeof B[key] !== 'object' && A[key] !== B[key]) {
+            return false
+        }
+
+        if (Array.isArray(A[key]) && Array.isArray(B[key])) {
+            if (!arrayEqual(A[key], B[key])) return false
+        }
+
+        // 递归判断
+        if (typeof A[key] === 'object' && typeof B[key] === 'object') {
+            if (!isEqual(A[key], B[key])) return false
+        }
+    }
+
+    return true
+}
+
+function arrayEqual(arr1, arr2) {
+    if (arr1.length !== arr2.length) return false
+
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] !== arr2[i]) return false
+    }
+
+    return true
+}
+isEqual(obj1, obj2)

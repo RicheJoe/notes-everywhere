@@ -1,0 +1,103 @@
+let arr = [1,2,3454,4,56,6,54,54,6546]
+let res  = arr.filter(a=>a!==1||a!==2)
+console.log(res)
+
+
+
+
+function createArr (...elements) {
+  let handler = {
+    get (target, key, receiver) { // 第三个参数传不传都可以
+      let index = Number(key)
+      if (index < 0) {
+        index = String(target.length + index)
+      }
+      return Reflect.get(target, index, receiver)
+    }
+  }
+  let target = []
+  target.push(...elements)
+  return new Proxy(target, handler)
+}
+var arr1 = createArr(1, 2, 3)
+console.log(arr1[-1]) // 3
+console.log(arr1[-2]) // 2
+
+
+
+// #第30题 设计一个方法提取对象中所有value大于2的键值对并返回最新的对象
+// 实现：
+
+var obj = { a: 1, b: 3, c: 4 }
+// foo(obj) // { b: 3, c: 4 }
+// // 方法有很多种，这里提供一种比较简洁的写法，用到了ES10的Object.fromEntries()：
+
+// var obj = { a: 1, b: 3, c: 4 }
+// function foo (obj) {
+//   return Object.fromEntries(
+//     Object.entries(obj).filter(([key, value]) => value > 2)
+//   )
+// }
+// var obj2 = foo(obj) // { b: 3, c: 4 }
+// console.log(obj2)
+// // ES8中 Object.entries()的作用：
+// var obj = { a: 1, b: 2 }
+// var entries = Object.entries(obj); // [['a', 1], ['b', 2]]
+// // ES10中 Object.fromEntries()的作用：
+// Object.fromEntries(entries); // { a: 1, b: 2 }
+obj == Object.fromEntries(Object.entries(obj))
+
+function myFn(obj){
+  let res  = {}
+  for(let i in obj)  {
+    if(obj[i]>2){res[i] = obj[i]}
+  }
+  return res
+}
+console.log(myFn(obj),isRight)
+
+// 手写promise
+function Promise(fn) {
+  this.cbs = [];
+
+  const resolve = (value) => {
+    setTimeout(() => {
+      this.data = value;
+      this.cbs.forEach((cb) => cb(value));
+    });
+  }
+
+  fn(resolve.bind(this));
+}
+
+Promise.prototype.then = function (onResolved) {
+  return new Promise((resolve) => {
+    this.cbs.push(() => {
+      const res = onResolved(this.data);
+      if (res instanceof Promise) {
+        res.then(resolve);
+      } else {
+        resolve(res);
+      }
+    });
+  });
+};
+// #核心案例
+new Promise((resolve) => {
+  setTimeout(() => {
+    resolve(1);
+  }, 500);
+})
+  .then((res) => {
+    console.log(res);
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(2);
+      }, 500);
+    });
+  })
+  .then(console.log);
+
+
+
+  

@@ -1,0 +1,53 @@
+async importAndUpdate(item) {
+      //导入模块功能 请求数据的时候需要再去请求模块导入的进度接口 
+      const tarId = item.id;
+      const operateNum = 1;
+      const { host, port } = this.activeBag;
+
+      let loading = this.showLoading("正在导入");
+      this.importPercentage = 0.01;
+
+    //开启请求进度得函数  2s后执行
+      let timer = setInterval(() => {
+        speedGet(tarId + "-" + host).then(
+          res => {
+            if (res["object"]) {
+              let resPercentage = JSON.parse(res["object"]);
+              this.importPercentage = Number(
+                resPercentage.percentage.replace(/(^%)|(%$)/g, "")
+              );
+              this.progressAll = resPercentage.total;
+              this.progressNow = resPercentage.current;
+            }
+          },
+          err => {
+            err;
+            this.closeLoading(loading);
+            this.importPercentage = 0;
+            this.errMessage("请求超时");
+            clearInterval(timer);
+          }
+        );
+      }, 2000);
+
+    //开始请求接口    此时进度条已经开始返回  2s更改一次进度值   此时接口阻塞在此
+      try {
+        const res = await serviceOperate(host, port, tarId, operateNum);
+        if (res.code === 0) {
+          this.successMassage(item.name + " : 导入成功", "success");
+        } else {
+          this.errMessage(res.errorMsg);
+        }
+      } catch (error) {
+        clearInterval(timer);
+        this.importPercentage = 0;
+        this.errMessage("服务器异常");
+      }
+     
+    //取消进度条函数  此时请求完毕   进度条消失
+      clearInterval(timer);
+      this.importPercentage = 0;
+      this.progressAll = 0;
+      this.progressNow = 0;
+      this.getClientInfo();
+      this.closeLoading(loading);

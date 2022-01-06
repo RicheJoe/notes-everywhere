@@ -1,0 +1,264 @@
+手写  简单实现
+============================
+============================
+class myPromise{
+    constructor(executor){
+        this.state = 'pending';
+        this.value = null;
+        this.reason = null;
+
+        let resolve = (value)=>{
+            if(this.state == 'pending'){
+                this.state = 'fulfilled';
+                this.value = value ;
+              }        
+         };
+         let reject = (reason)=>{
+            if(this.state == 'pending'){
+                this.state = 'rejected';
+                this.reason = reason ;
+              }        
+         };
+
+        try{
+            executor(resolve,reject)
+        }catch(err){
+             reject(err)
+        }
+    }
+
+    then(onFulfilled,onRejected){
+        if(this.state = 'fulfilled') onFulfilled(this.value);
+        if(this.state = 'rejected') onRejected(this.reason)
+    }
+    catch(onRejected){
+        onRejected(this.reason)
+    }
+}
+let p = new myPromise((resolve, reject) => {resolve('success')})
+p.then(res=>console.log(res),err=>console.log(err ))  //success
+
+
+
+手写实现promise.all
+Promise.myAll = (promises)=>{
+    let results = [];
+    let promisesCount = 0;
+    let promisesLength = promises.length;
+    
+    return new Promise((resolve,reject)=>{
+        for(let i in promises){
+                Promise.resolve(promises[i]).then(    //这里再套一层是为了防止传入的不是一个promise实例  
+                    res=>{
+                        promisesCount++;
+                        results[i] = res;
+                        if(promisesCount == promisesLength) resolve(results);
+                    },
+                    err=>reject(err)                
+                )
+
+            }
+    
+    })
+
+}
+
+
+
+
+
+============================
+============================
+Promise.all()的作用是接收一组异步任务，然后并行执行异步任务，并且在所有异步操作执行完后才执行回调。 .race()的作用也是接收一组异步任务，然后并行执行异步任务，只保留取第一个执行完成的异步操作的结果，其他的方法仍在执行，不过执行结果会被抛弃。
+Promise.all().then()结果中数组的顺序和Promise.all()接收到的数组顺序一致。
+all和race传入的数组中如果有会抛出异常的异步任务，那么只有最先抛出的错误会被捕获，并且是被then的第二个参数或者后面的catch捕获；但并不会影响数组中其它的异步任务的执行。
+
+
+
+使用Promise实现每隔1秒输出1,2,3
+这道题比较简单的一种做法是可以用Promise配合着reduce不停的在promise后面叠加.then，请看下面的代码：
+
+const arr = [1, 2, 3]
+arr.reduce((p, x) => {
+  return p.then(() => {
+    return new Promise(r => {
+      setTimeout(() => r(console.log(x)), 1000)
+    })
+  })
+}, Promise.resolve())
+
+同
+const arr = [1, 2, 3]
+arr.reduce((p, x) => p.then(() => new Promise(r => setTimeout(() => r(console.log(x)), 1000))), Promise.resolve())
+
+
+
+
+
+
+
+
+
+
+================================================
+=================和事件循环机制配合的题
+async function async1() {
+  console.log("async1 start");
+  await async2();
+  console.log("async1 end");
+}
+
+async function async2() {
+  console.log("async2");
+}
+
+console.log("script start");
+
+setTimeout(function() {
+  console.log("setTimeout");
+}, 0);
+
+async1();
+
+new Promise(function(resolve) {
+  console.log("promise1");
+  resolve();
+}).then(function() {
+  console.log("promise2");
+});
+console.log('script end')
+
+答案：
+'script start'
+'async1 start'
+'async2'
+'promise1'
+'script end'
+'async1 end'
+'promise2'
+'setTimeout'
+
+
+
+
+=======================================
+==========================================
+/**
+ * 使用Promise实现红绿灯交替重复亮
+红灯3秒亮一次，黄灯2秒亮一次，绿灯1秒亮一次；如何让三个灯不断交替重复亮灯？（用Promise实现）三个亮灯函数已经存在： 
+
+
+思路：
+
+包裹两层promise  外层执行完再进内层promise 实现异步 
+
+ */
+
+function red() {
+  console.log("red");
+}
+function green() {
+  console.log("green");
+}
+function yellow() {
+  console.log("yellow");
+}
+//按时间顺序执行的promise函数
+const light = function(timer, fn) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      fn();
+      resolve();
+    }, timer);
+  });
+};
+
+const step = function() {
+  Promise.resolve()
+    .then(() => light(3000, red))
+    .then(() => light(2000, yellow))
+    .then(() => light(1000, green));
+};
+
+//执行
+step();
+
+
+
+
+
+
+
+
+
+
+
+=========================================
+=========================================
+/**
+封装一个异步加载图片的方法
+这个相对简单一些，只需要在图片的onload函数中，使用resolve返回一下就可以了。 来看看具体代码：
+ * 
+ * 
+ */
+
+function loadImg(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = function() {
+      console.log("一张图片加载完成");
+      resolve(img);
+    };
+    img.onerror = function() {
+      reject(new Error("Could not load image at" + url));
+    };
+    img.src = url;
+  });
+}
+
+
+=====
+======
+拓展
+
+//拓展   限制异步操作的并发个数并尽可能快的完成全部  一次只能请求3个图片
+// 思路  将图片数组分为3个一组的二维数组  用promise.all 请求 结束后在下一组
+let imgUrls = [
+  "https://hexo-blog-1256114407.cos.ap-shenzhen-fsi.myqcloud.com/AboutMe-painting1.png",
+  "https://hexo-blog-1256114407.cos.ap-shenzhen-fsi.myqcloud.com/AboutMe-painting2.png",
+  "https://hexo-blog-1256114407.cos.ap-shenzhen-fsi.myqcloud.com/AboutMe-painting3.png",
+  "https://hexo-blog-1256114407.cos.ap-shenzhen-fsi.myqcloud.com/AboutMe-painting4.png",
+  "https://hexo-blog-1256114407.cos.ap-shenzhen-fsi.myqcloud.com/AboutMe-painting5.png",
+  "https://hexo-blog-1256114407.cos.ap-shenzhen-fsi.myqcloud.com/bpmn6.png",
+  "https://hexo-blog-1256114407.cos.ap-shenzhen-fsi.myqcloud.com/bpmn7.png",
+  "https://hexo-blog-1256114407.cos.ap-shenzhen-fsi.myqcloud.com/bpmn8.png"
+];
+
+function limitLoad(list, limit, handle) {
+  //分割数组
+  const handleUrls = function() {
+    let newList = [];
+    let count = Math.ceil(list.length / limit);
+    for (let i = 0; i < count; i++) {
+      newList.push(list.slice(i * limit, (i + 1) * limit));
+    }
+    return newList;
+  };
+
+  let newList = handleUrls();
+  console.log(newList); //得到新的二维数组
+
+  const innerList = function(arr) {
+    //新二维数组执行加载方法
+    return arr.map(a => handle(a));
+  };
+
+  newList.forEach(i => {
+    //使用promise.all 令新数组每一项执行完毕后再执行下一个循环
+    Promise.all(innerList(i)).then(res => {
+      console.log(res);
+    });
+  });
+}
+
+limitLoad(imgUrls, 3, loadImg);

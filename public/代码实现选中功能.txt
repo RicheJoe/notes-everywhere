@@ -1,0 +1,12 @@
+const selection = window.getSelection();
+const range = document.createRange();
+
+range.selectNodeContents(document.getElementById("ppppp"));  //改变元素即可
+selection.removeAllRanges();
+selection.addRange(range);
+
+selectedText = selection.toString();
+
+
+==============
+document.execCommand('copy')  //复制

@@ -1,0 +1,74 @@
+let  nest = (items, id =-1, link = 'parentId') =>
+  items
+    .filter(item => item[link] === id)
+//.sort((a,b) => a.sort - b.sort)    当然还可以传入sortKey用来排序 
+    .map(item => ({ ...item, children: nest(items, item.id) }));
+
+
+
+//解释  其中  id 为顶级目录得id  如  -1  0   表示没上层结构
+
+link为parentId属性名称    如  parentId  parent_id 等
+
+
+使用例子：
+let list = [{"description":"","iconUrl":"","id":25,"name":"测试部门","parentId":-1,"sort":1,"userId":""},{"description":"","iconUrl":"","id":13,"name":"武器装备组1","parentId":12,"sort":1,"userId":"10089"},{"description":"","iconUrl":"","id":10,"name":"科研部门","parentId":-1,"sort":2,"userId":"10159,10172"},{"description":"","iconUrl":"","id":11,"name":"科研小组1","parentId":10,"sort":1,"userId":"10159"},{"description":"","iconUrl":"","id":12,"name":"科研小组2","parentId":10,"sort":2,"userId":"10089"},{"description":"","iconUrl":"","id":14,"name":"武器装备组2","parentId":12,"sort":2,"userId":"10089"},
+{"description":"liujf测试","iconUrl":"","id":16,"name":"调研小组","parentId":18,"sort":1,"userId":"10097,10095"},{"description":"","iconUrl":"","id":15,"name":"后勤部门","parentId":-1,"sort":3,"userId":"10095"},{"description":"","iconUrl":"","id":17,"name":"审核小组","parentId":-1,"sort":4,"userId":"10099"},{"description":"","iconUrl":"","id":18,"name":"调研大组","parentId":-1,"sort":5,"userId":"10095"},{"description":"","iconUrl":"","id":27,"name":"测试","parentId":26,"sort":1,"userId":""},{"description":"","iconUrl":"","id":26,"name":"测试小组","parentId":25,"sort":1,"userId":""}]
+
+
+nest(list)
+
+
+//返回:
+{
+    "description": "",
+    "iconUrl": "",
+    "id": 10,
+    "name": "科研部门",
+    "parentId": -1,
+    "sort": null,
+    "userId": "10159,10172",
+    "children": [
+        {
+            "description": "",
+            "iconUrl": "",
+            "id": 11,
+            "name": "科研小组1",
+            "parentId": 10,
+            "sort": null,
+            "userId": "10159",
+            "children": []
+        },
+        {
+            "description": "",
+            "iconUrl": "",
+            "id": 12,
+            "name": "科研小组2",
+            "parentId": 10,
+            "sort": null,
+            "userId": "10089",
+            "children": [
+                {
+                    "description": "",
+                    "iconUrl": "",
+                    "id": 13,
+                    "name": "武器装备组1",
+                    "parentId": 12,
+                    "sort": null,
+                    "userId": "10089",
+                    "children": []
+                },
+                {
+                    "description": "",
+                    "iconUrl": "",
+                    "id": 14,
+                    "name": "武器装备组2",
+                    "parentId": 12,
+                    "sort": null,
+                    "userId": "10089",
+                    "children": []
+                }
+            ]
+        }
+    ]
+}
