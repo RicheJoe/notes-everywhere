@@ -175,3 +175,41 @@ const promiseArr = [p1, p2, f3, p4];
 runPromiseInSequence(promiseArr, 10).then(res => {
   console.log(res);
 }); // 1200
+
+// 如果华陀再世
+// 崇洋都被医治
+// 外邦来学汉字
+// 激发我民族意识
+// 马钱子 决明子
+// 苍耳子 还有莲子
+// 黄药子 苦豆子
+// 川楝子 我要面子
+// 用我的方式
+// 改写一部历史
+// 没什么别的事
+// 跟着我念几个字
+// 山药 当归 枸杞
+// Go
+// 山药 当归 枸杞
+// Go
+// 看我抓一把中药
+// 服下一帖骄傲
+
+const square = v => v * v;
+const double = v => v * 2;
+const addOne = v => v + 1;
+
+const res = pipe(square, double, addOne);
+res(3); // 19;
+
+// 实现 pipe
+
+function pipe() {
+  const args = Array.from(arguments);
+  const n = args.length;
+
+  return function (num) {
+    if (!n) return null;
+    return args.reduce((prev, cur) => cur(prev), num);
+  };
+}
